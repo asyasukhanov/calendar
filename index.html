@@ -1,603 +1,302 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Календарь встреч</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-        
-        .content {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 0;
-        }
-        
-        .form-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-right: 2px solid #e0e0e0;
-        }
-        
-        .form-group {
-            margin-bottom: 18px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-        
-        .time-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-        
-        .time-slot {
-            padding: 8px;
-            background: white;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
-        
-        .time-slot:hover {
-            background: #f0f0f0;
-        }
-        
-        .time-slot.selected {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        .time-slot.occupied {
-            background: #ffebee;
-            border-color: #ef5350;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 10px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .calendar-section {
-            padding: 25px;
-        }
-        
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .calendar-nav {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .nav-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .current-date {
-            font-size: 20px;
-            font-weight: 700;
-            color: #333;
-        }
-        
-        .calendar-grid {
-            display: grid;
-            gap: 15px;
-        }
-        
-        .day-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-        }
-        
-        .day-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .day-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #667eea;
-        }
-        
-        .day-date {
-            font-size: 13px;
-            color: #666;
-        }
-        
-        .meetings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .meeting-card {
-            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .meeting-time {
-            font-weight: 700;
-            color: #667eea;
-            font-size: 15px;
-            margin-bottom: 5px;
-        }
-        
-        .meeting-company {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 3px;
-        }
-        
-        .meeting-contact {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 2px;
-        }
-        
-        .meeting-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        
-        .delete-btn {
-            background: #ef5350;
-            color: white;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 5px;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .no-meetings {
-            text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 13px;
-            opacity: 0.9;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Календарь встреч</title>
+
+  <!-- Firebase -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+
+    // Firebase configuration
+    const firebaseConfig = { 
+      apiKey: "AIzaSyAWzacAewH_nRxNJRqnrORF9vPhzaLjn-Q",
+      authDomain: "meeting-calendar-20eb2.firebaseapp.com",
+      projectId: "meeting-calendar-20eb2",
+      storageBucket: "meeting-calendar-20eb2.firebasestorage.app",
+      messagingSenderId: "43144949492",
+      appId: "1:43144949492:web:afd82bd90b4ae3e637f8a1",
+      measurementId: "G-V5LDJRR90J"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase();
+
+    // ---------------- Variables ----------------
+    let meetings = [];
+    let currentWeekOffset = 0;
+    let selectedTime = null;
+
+    const timeSlots = [
+      '09:00','09:30','10:00','10:30','11:00','11:30',
+      '12:00','12:30','13:00','13:30','14:00','14:30',
+      '15:00','15:30','16:00','16:30','17:00','17:30','18:00'
+    ];
+
+    // ---------------- Functions ----------------
+    window.initTimeGrid = function() {
+      const grid = document.getElementById('timeGrid');
+      grid.innerHTML = '';
+      timeSlots.forEach(time => {
+        const slot = document.createElement('div');
+        slot.className = 'time-slot';
+        slot.textContent = time;
+        slot.onclick = () => selectTime(time, slot);
+        grid.appendChild(slot);
+      });
+    }
+
+    window.selectTime = function(time, element) {
+      if (element.classList.contains('occupied')) return;
+      document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedTime = time;
+    }
+
+    window.updateTimeSlots = function() {
+      const dateInput = document.getElementById('meetingDate');
+      const selectedDate = dateInput.value;
+      if (!selectedDate) return;
+
+      const occupiedTimes = meetings.filter(m => m.date === selectedDate).map(m => m.time);
+
+      document.querySelectorAll('.time-slot').forEach(slot => {
+        const time = slot.textContent;
+        slot.classList.remove('occupied', 'selected');
+        if (occupiedTimes.includes(time)) slot.classList.add('occupied');
+      });
+
+      selectedTime = null;
+    }
+
+    window.addMeeting = function() {
+      const date = document.getElementById('meetingDate').value;
+      const company = document.getElementById('companyName').value;
+      const contact = document.getElementById('contactPerson').value;
+      const phone = document.getElementById('phone').value;
+      const address = document.getElementById('address').value;
+      const comment = document.getElementById('comment').value;
+
+      if (!date || !selectedTime || !company) {
+        alert('Заполните обязательные поля: дата, время и название компании');
+        return;
+      }
+
+      const newMeetingRef = push(ref(db, 'meetings'));
+      set(newMeetingRef, {
+        id: newMeetingRef.key,
+        date,
+        time: selectedTime,
+        company,
+        contact,
+        phone,
+        address,
+        comment
+      });
+
+      document.getElementById('companyName').value = '';
+      document.getElementById('contactPerson').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('address').value = '';
+      document.getElementById('comment').value = '';
+      selectedTime = null;
+    }
+
+    window.deleteMeeting = function(id) {
+      if (confirm('Удалить эту встречу?')) {
+        remove(ref(db, 'meetings/' + id));
+      }
+    }
+
+    function getWeekDates(offset) {
+      const today = new Date();
+      today.setDate(today.getDate() + offset * 7);
+      const firstDay = new Date(today);
+      const day = firstDay.getDay();
+      const diff = firstDay.getDate() - day + (day === 0 ? -6 : 1);
+      firstDay.setDate(diff);
+      const dates = [];
+      for(let i=0;i<7;i++){
+        const d = new Date(firstDay);
+        d.setDate(firstDay.getDate()+i);
+        dates.push(d);
+      }
+      return dates;
+    }
+
+    function formatDate(date) {
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+
+    function formatDisplayDate(date){
+      const days = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+      const months = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+      return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]}`;
+    }
+
+    function updateCalendar() {
+      const dates = getWeekDates(currentWeekOffset);
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      const firstDate = dates[0];
+      const lastDate = dates[6];
+      document.getElementById('currentWeek').textContent =
+        `${firstDate.getDate()} ${['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'][firstDate.getMonth()]} - ${lastDate.getDate()} ${['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'][lastDate.getMonth()]} ${lastDate.getFullYear()}`;
+
+      dates.forEach(date=>{
+        const dateStr = formatDate(date);
+        const dayMeetings = meetings.filter(m=>m.date===dateStr).sort((a,b)=>a.time.localeCompare(b.time));
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        const todayStr = formatDate(new Date());
+        const isToday = dateStr===todayStr;
+
+        card.innerHTML = `
+          <div class="day-header">
+            <div class="day-name" style="${isToday?'color:#ef5350;':''}">${formatDisplayDate(date)} ${isToday?'(Сегодня)':''}</div>
+            <div class="day-date">${dayMeetings.length} встреч</div>
+          </div>
+          <div class="meetings-list">
+            ${dayMeetings.length>0 ? 
+              dayMeetings.map(m=>`
+                <div class="meeting-card">
+                  <div class="meeting-time">⏰ ${m.time}</div>
+                  <div class="meeting-company">🏢 ${m.company}</div>
+                  ${m.contact?`<div class="meeting-contact">👤 ${m.contact}</div>`:''}
+                  ${m.phone?`<div class="meeting-contact">📞 ${m.phone}</div>`:''}
+                  ${m.address?`<div class="meeting-contact">📍 ${m.address}</div>`:''}
+                  ${m.comment?`<div class="meeting-contact">💬 ${m.comment}</div>`:''}
+                  <div class="meeting-actions">
+                    <button class="delete-btn" onclick="deleteMeeting('${m.id}')">🗑️ Удалить</button>
+                  </div>
+                </div>
+              `).join('') : '<div class="no-meetings">Встреч нет</div>'}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    window.changeWeek = function(offset){
+      currentWeekOffset = offset===0?0:currentWeekOffset+offset;
+      updateCalendar();
+    }
+
+    function updateStats(){
+      const todayStr = formatDate(new Date());
+      const todayMeetings = meetings.filter(m=>m.date===todayStr).length;
+      const weekDates = getWeekDates(0).map(d=>formatDate(d));
+      const weekMeetings = meetings.filter(m=>weekDates.includes(m.date)).length;
+
+      document.getElementById('todayCount').textContent = todayMeetings;
+      document.getElementById('weekCount').textContent = weekMeetings;
+      document.getElementById('totalCount').textContent = meetings.length;
+    }
+
+    function updateAll() {
+      updateCalendar();
+      updateTimeSlots();
+      updateStats();
+    }
+
+    // ---------------- Listen Firebase ----------------
+    const meetingsRef = ref(db, 'meetings');
+    onValue(meetingsRef, (snapshot)=>{
+      const data = snapshot.val();
+      meetings = data ? Object.values(data) : [];
+      updateAll();
+    });
+
+    // ---------------- Initialize ----------------
+    window.addEventListener('DOMContentLoaded', ()=>{
+      const today = new Date();
+      document.getElementById('meetingDate').value = formatDate(today);
+      document.getElementById('meetingDate').min = formatDate(today);
+      initTimeGrid();
+    });
+  </script>
+
+  <style>
+    /* сюда вставляем CSS из предыдущего ответа */
+    /* ... */
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📅 Календарь встреч колл-центра</h1>
-            <p>Планирование визитов производителя столешниц</p>
-        </div>
-        
-        <div class="content">
-            <div class="form-section">
-                <h2 style="margin-bottom: 20px; color: #333;">Новая встреча</h2>
-                
-                <div class="form-group">
-                    <label>📅 Дата встречи</label>
-                    <input type="date" id="meetingDate" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>🕐 Выберите время</label>
-                    <div class="time-grid" id="timeGrid"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>🏢 Название компании</label>
-                    <input type="text" id="companyName" placeholder="Кухни Люкс" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>👤 Контактное лицо</label>
-                    <input type="text" id="contactPerson" placeholder="Иванов Петр (директор)">
-                </div>
-                
-                <div class="form-group">
-                    <label>📞 Телефон</label>
-                    <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
-                </div>
-                
-                <div class="form-group">
-                    <label>📍 Адрес</label>
-                    <input type="text" id="address" placeholder="ул. Ленина, 15">
-                </div>
-                
-                <div class="form-group">
-                    <label>💬 Комментарий</label>
-                    <textarea id="comment" placeholder="Интересует темный камень, работает с Зов..."></textarea>
-                </div>
-                
-                <button class="btn" onclick="addMeeting()">✅ Добавить встречу</button>
-            </div>
-            
-            <div class="calendar-section">
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="todayCount">0</div>
-                        <div class="stat-label">Встреч сегодня</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="weekCount">0</div>
-                        <div class="stat-label">На этой неделе</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalCount">0</div>
-                        <div class="stat-label">Всего встреч</div>
-                    </div>
-                </div>
-                
-                <div class="calendar-header">
-                    <div class="calendar-nav">
-                        <button class="nav-btn" onclick="changeWeek(-1)">← Пред. неделя</button>
-                        <button class="nav-btn" onclick="changeWeek(0)">Сегодня</button>
-                        <button class="nav-btn" onclick="changeWeek(1)">След. неделя →</button>
-                    </div>
-                    <div class="current-date" id="currentWeek"></div>
-                </div>
-                
-                <div class="calendar-grid" id="calendarGrid"></div>
-            </div>
-        </div>
+  <!-- HTML структура: форма и календарь -->
+  <div class="container">
+    <div class="header">
+      <h1>📅 Календарь встреч колл-центра</h1>
+      <p>Планирование визитов производителя столешниц</p>
     </div>
-
-    <script>
-        let meetings = [];
-        let currentWeekOffset = 0;
-        let selectedTime = null;
-        
-        const timeSlots = [
-            '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-            '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-            '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
-        ];
-        
-        function initTimeGrid() {
-            const grid = document.getElementById('timeGrid');
-            grid.innerHTML = '';
-            timeSlots.forEach(time => {
-                const slot = document.createElement('div');
-                slot.className = 'time-slot';
-                slot.textContent = time;
-                slot.onclick = () => selectTime(time, slot);
-                grid.appendChild(slot);
-            });
-        }
-        
-        function selectTime(time, element) {
-            if (element.classList.contains('occupied')) return;
-            
-            document.querySelectorAll('.time-slot').forEach(el => {
-                el.classList.remove('selected');
-            });
-            element.classList.add('selected');
-            selectedTime = time;
-        }
-        
-        function updateTimeSlots() {
-            const dateInput = document.getElementById('meetingDate');
-            const selectedDate = dateInput.value;
-            
-            if (!selectedDate) return;
-            
-            const occupiedTimes = meetings
-                .filter(m => m.date === selectedDate)
-                .map(m => m.time);
-            
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                const time = slot.textContent;
-                slot.classList.remove('occupied', 'selected');
-                if (occupiedTimes.includes(time)) {
-                    slot.classList.add('occupied');
-                }
-            });
-            
-            selectedTime = null;
-        }
-        
-        function addMeeting() {
-            const date = document.getElementById('meetingDate').value;
-            const company = document.getElementById('companyName').value;
-            const contact = document.getElementById('contactPerson').value;
-            const phone = document.getElementById('phone').value;
-            const address = document.getElementById('address').value;
-            const comment = document.getElementById('comment').value;
-            
-            if (!date || !selectedTime || !company) {
-                alert('Заполните обязательные поля: дата, время и название компании');
-                return;
-            }
-            
-            const meeting = {
-                id: Date.now(),
-                date,
-                time: selectedTime,
-                company,
-                contact,
-                phone,
-                address,
-                comment
-            };
-            
-            meetings.push(meeting);
-            saveMeetings();
-            
-            document.getElementById('companyName').value = '';
-            document.getElementById('contactPerson').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('address').value = '';
-            document.getElementById('comment').value = '';
-            selectedTime = null;
-            
-            updateCalendar();
-            updateTimeSlots();
-            updateStats();
-            
-            alert('✅ Встреча успешно добавлена!');
-        }
-        
-        function deleteMeeting(id) {
-            if (confirm('Удалить эту встречу?')) {
-                meetings = meetings.filter(m => m.id !== id);
-                saveMeetings();
-                updateCalendar();
-                updateTimeSlots();
-                updateStats();
-            }
-        }
-        
-        function getWeekDates(offset) {
-            const today = new Date();
-            today.setDate(today.getDate() + offset * 7);
-            const firstDay = new Date(today);
-            const day = firstDay.getDay();
-            const diff = firstDay.getDate() - day + (day === 0 ? -6 : 1);
-            firstDay.setDate(diff);
-            
-            const dates = [];
-            for (let i = 0; i < 7; i++) {
-                const date = new Date(firstDay);
-                date.setDate(firstDay.getDate() + i);
-                dates.push(date);
-            }
-            return dates;
-        }
-        
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        function formatDisplayDate(date) {
-            const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-            const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-            return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]}`;
-        }
-        
-        function updateCalendar() {
-            const dates = getWeekDates(currentWeekOffset);
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-            
-            const firstDate = dates[0];
-            const lastDate = dates[6];
-            document.getElementById('currentWeek').textContent = 
-                `${firstDate.getDate()} ${['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'][firstDate.getMonth()]} - ${lastDate.getDate()} ${['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'][lastDate.getMonth()]} ${lastDate.getFullYear()}`;
-            
-            dates.forEach(date => {
-                const dateStr = formatDate(date);
-                const dayMeetings = meetings.filter(m => m.date === dateStr)
-                    .sort((a, b) => a.time.localeCompare(b.time));
-                
-                const card = document.createElement('div');
-                card.className = 'day-card';
-                
-                const today = formatDate(new Date());
-                const isToday = dateStr === today;
-                
-                card.innerHTML = `
-                    <div class="day-header">
-                        <div class="day-name" style="${isToday ? 'color: #ef5350;' : ''}">${formatDisplayDate(date)} ${isToday ? '(Сегодня)' : ''}</div>
-                        <div class="day-date">${dayMeetings.length} встреч</div>
-                    </div>
-                    <div class="meetings-list">
-                        ${dayMeetings.length > 0 ? 
-                            dayMeetings.map(m => `
-                                <div class="meeting-card">
-                                    <div class="meeting-time">⏰ ${m.time}</div>
-                                    <div class="meeting-company">🏢 ${m.company}</div>
-                                    ${m.contact ? `<div class="meeting-contact">👤 ${m.contact}</div>` : ''}
-                                    ${m.phone ? `<div class="meeting-contact">📞 ${m.phone}</div>` : ''}
-                                    ${m.address ? `<div class="meeting-contact">📍 ${m.address}</div>` : ''}
-                                    ${m.comment ? `<div class="meeting-contact">💬 ${m.comment}</div>` : ''}
-                                    <div class="meeting-actions">
-                                        <button class="delete-btn" onclick="deleteMeeting(${m.id})">🗑️ Удалить</button>
-                                    </div>
-                                </div>
-                            `).join('') 
-                            : '<div class="no-meetings">Встреч нет</div>'
-                        }
-                    </div>
-                `;
-                
-                grid.appendChild(card);
-            });
-        }
-        
-        function changeWeek(offset) {
-            if (offset === 0) {
-                currentWeekOffset = 0;
-            } else {
-                currentWeekOffset += offset;
-            }
-            updateCalendar();
-        }
-        
-        function updateStats() {
-            const today = formatDate(new Date());
-            const todayMeetings = meetings.filter(m => m.date === today).length;
-            
-            const weekDates = getWeekDates(0).map(d => formatDate(d));
-            const weekMeetings = meetings.filter(m => weekDates.includes(m.date)).length;
-            
-            document.getElementById('todayCount').textContent = todayMeetings;
-            document.getElementById('weekCount').textContent = weekMeetings;
-            document.getElementById('totalCount').textContent = meetings.length;
-        }
-        
-        function saveMeetings() {
-            localStorage.setItem('meetings', JSON.stringify(meetings));
-        }
-        
-        function loadMeetings() {
-            const saved = localStorage.getItem('meetings');
-            if (saved) {
-                meetings = JSON.parse(saved);
-            }
-        }
-        
-        document.getElementById('meetingDate').addEventListener('change', updateTimeSlots);
-        
-        const today = new Date();
-        document.getElementById('meetingDate').value = formatDate(today);
-        document.getElementById('meetingDate').min = formatDate(today);
-        
+    <div class="content">
+      <div class="form-section">
+        <h2 style="margin-bottom: 20px; color: #333;">Новая встреча</h2>
+        <div class="form-group">
+          <label>📅 Дата встречи</label>
+          <input type="date" id="meetingDate" required>
+        </div>
+        <div class="form-group">
+          <label>🕐 Выберите время</label>
+          <div class="time-grid" id="timeGrid"></div>
+        </div>
+        <div class="form-group">
+          <label>🏢 Название компании</label>
+          <input type="text" id="companyName" placeholder="Кухни Люкс" required>
+        </div>
+        <div class="form-group">
+          <label>👤 Контактное лицо</label>
+          <input type="text" id="contactPerson" placeholder="Иванов Петр (директор)">
+        </div>
+        <div class="form-group">
+          <label>📞 Телефон</label>
+          <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
+        </div>
+        <div class="form-group">
+          <label>📍 Адрес</label>
+          <input type="text" id="address" placeholder="ул. Ленина, 15">
+        </div>
+        <div class="form-group">
+          <label>💬 Комментарий</label>
+          <textarea id="comment" placeholder="Интересует темный камень, работает с Зов..."></textarea>
+        </div>
+        <button class="btn" onclick="addMeeting()">✅ Добавить встречу</button>
+      </div>
+      <div class="calendar-section">
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-number" id="todayCount">0</div>
+            <div class="stat-label">Встреч сегодня</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="weekCount">0</div>
+            <div class="stat-label">На этой неделе</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalCount">0</div>
+            <div class="stat-label">Всего встреч</div>
+          </div>
+        </div>
+        <div class="calendar-header">
+          <div class="calendar-nav">
+            <button class="nav-btn" onclick="changeWeek(-1)">← Пред. неделя</button>
+            <button class="nav-btn" onclick="changeWeek(0)">Сегодня</button>
+            <button class="nav-btn" onclick="changeWeek(1)">След. неделя →</button>
+          </div>
+          <div class="current-date" id="currentWeek"></div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
         loadMeetings();
         initTimeGrid();
         updateCalendar();
