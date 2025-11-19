@@ -567,9 +567,12 @@
             '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
         ];
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            updateUIForAuth(user);
+        // Wait for page load
+        window.addEventListener('DOMContentLoaded', () => {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                updateUIForAuth(user);
+            });
         });
 
         function updateUIForAuth(user) {
@@ -594,11 +597,15 @@
         }
 
         window.showLoginModal = function() {
-            document.getElementById('loginModal').classList.add('show');
+            const modal = document.getElementById('loginModal');
+            modal.classList.add('show');
+            modal.style.display = 'flex';
         };
 
         window.closeLoginModal = function() {
-            document.getElementById('loginModal').classList.remove('show');
+            const modal = document.getElementById('loginModal');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
             document.getElementById('errorMessage').style.display = 'none';
         };
 
