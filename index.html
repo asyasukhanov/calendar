@@ -294,6 +294,18 @@
             font-size: 13px;
             opacity: 0.9;
         }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -375,7 +387,28 @@
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue, remove, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWzacAewH_nRxNJRqnrORF9vPhzaLjn-Q",
+            authDomain: "meeting-calendar-20eb2.firebaseapp.com",
+            databaseURL: "https://meeting-calendar-20eb2-default-rtdb.firebaseio.com",
+            projectId: "meeting-calendar-20eb2",
+            storageBucket: "meeting-calendar-20eb2.firebasestorage.app",
+            messagingSenderId: "43144949492",
+            appId: "1:43144949492:web:afd82bd90b4ae3e637f8a1",
+            measurementId: "G-V5LDJRR90J"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Global variables
         let meetings = [];
         let currentWeekOffset = 0;
         let selectedTime = null;
@@ -385,6 +418,85 @@
             '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
             '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
         ];
+        
+        // Load meetings from Firebase
+        function loadMeetings() {
+            const meetingsRef = ref(database, 'meetings');
+            onValue(meetingsRef, (snapshot) => {
+                meetings = [];
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        meetings.push({
+                            id: key,
+                            ...data[key]
+                        });
+                    });
+                }
+                updateCalendar();
+                updateTimeSlots();
+                updateStats();
+            });
+        }
+        
+        // Save meeting to Firebase
+        window.addMeeting = function() {
+            const date = document.getElementById('meetingDate').value;
+            const company = document.getElementById('companyName').value;
+            const contact = document.getElementById('contactPerson').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const comment = document.getElementById('comment').value;
+            
+            if (!date || !selectedTime || !company) {
+                alert('Заполните обязательные поля: дата, время и название компании');
+                return;
+            }
+            
+            const meetingsRef = ref(database, 'meetings');
+            const newMeetingRef = push(meetingsRef);
+            
+            const meeting = {
+                date,
+                time: selectedTime,
+                company,
+                contact,
+                phone,
+                address,
+                comment,
+                createdAt: Date.now()
+            };
+            
+            set(newMeetingRef, meeting).then(() => {
+                // Clear form
+                document.getElementById('companyName').value = '';
+                document.getElementById('contactPerson').value = '';
+                document.getElementById('phone').value = '';
+                document.getElementById('address').value = '';
+                document.getElementById('comment').value = '';
+                selectedTime = null;
+                
+                document.querySelectorAll('.time-slot').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                alert('✅ Встреча успешно добавлена!');
+            }).catch((error) => {
+                alert('Ошибка при добавлении встречи: ' + error.message);
+            });
+        };
+        
+        // Delete meeting from Firebase
+        window.deleteMeeting = function(id) {
+            if (confirm('Удалить эту встречу?')) {
+                const meetingRef = ref(database, 'meetings/' + id);
+                remove(meetingRef).then(() => {
+                    console.log('Встреча удалена');
+                }).catch((error) => {
+                    alert('Ошибка при удалении: ' + error.message);
+                });
+            }
+        };
         
         function initTimeGrid() {
             const grid = document.getElementById('timeGrid');
@@ -427,57 +539,6 @@
             });
             
             selectedTime = null;
-        }
-        
-        function addMeeting() {
-            const date = document.getElementById('meetingDate').value;
-            const company = document.getElementById('companyName').value;
-            const contact = document.getElementById('contactPerson').value;
-            const phone = document.getElementById('phone').value;
-            const address = document.getElementById('address').value;
-            const comment = document.getElementById('comment').value;
-            
-            if (!date || !selectedTime || !company) {
-                alert('Заполните обязательные поля: дата, время и название компании');
-                return;
-            }
-            
-            const meeting = {
-                id: Date.now(),
-                date,
-                time: selectedTime,
-                company,
-                contact,
-                phone,
-                address,
-                comment
-            };
-            
-            meetings.push(meeting);
-            saveMeetings();
-            
-            document.getElementById('companyName').value = '';
-            document.getElementById('contactPerson').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('address').value = '';
-            document.getElementById('comment').value = '';
-            selectedTime = null;
-            
-            updateCalendar();
-            updateTimeSlots();
-            updateStats();
-            
-            alert('✅ Встреча успешно добавлена!');
-        }
-        
-        function deleteMeeting(id) {
-            if (confirm('Удалить эту встречу?')) {
-                meetings = meetings.filter(m => m.id !== id);
-                saveMeetings();
-                updateCalendar();
-                updateTimeSlots();
-                updateStats();
-            }
         }
         
         function getWeekDates(offset) {
@@ -547,7 +608,7 @@
                                     ${m.address ? `<div class="meeting-contact">📍 ${m.address}</div>` : ''}
                                     ${m.comment ? `<div class="meeting-contact">💬 ${m.comment}</div>` : ''}
                                     <div class="meeting-actions">
-                                        <button class="delete-btn" onclick="deleteMeeting(${m.id})">🗑️ Удалить</button>
+                                        <button class="delete-btn" onclick="deleteMeeting('${m.id}')">🗑️ Удалить</button>
                                     </div>
                                 </div>
                             `).join('') 
@@ -560,14 +621,14 @@
             });
         }
         
-        function changeWeek(offset) {
+        window.changeWeek = function(offset) {
             if (offset === 0) {
                 currentWeekOffset = 0;
             } else {
                 currentWeekOffset += offset;
             }
             updateCalendar();
-        }
+        };
         
         function updateStats() {
             const today = formatDate(new Date());
@@ -581,28 +642,16 @@
             document.getElementById('totalCount').textContent = meetings.length;
         }
         
-        function saveMeetings() {
-            localStorage.setItem('meetings', JSON.stringify(meetings));
-        }
-        
-        function loadMeetings() {
-            const saved = localStorage.getItem('meetings');
-            if (saved) {
-                meetings = JSON.parse(saved);
-            }
-        }
-        
+        // Event listeners
         document.getElementById('meetingDate').addEventListener('change', updateTimeSlots);
         
+        // Initialize
         const today = new Date();
         document.getElementById('meetingDate').value = formatDate(today);
         document.getElementById('meetingDate').min = formatDate(today);
         
-        loadMeetings();
         initTimeGrid();
-        updateCalendar();
-        updateTimeSlots();
-        updateStats();
+        loadMeetings();
     </script>
 </body>
 </html>
